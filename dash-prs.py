@@ -1,6 +1,4 @@
 import requests
-import json
-import pprint
 
 ORG = 'dashpay'
 REPO = 'dash'
