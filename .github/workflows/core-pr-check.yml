@@ -31,4 +31,5 @@ jobs:
           # Version range or exact version of a Python version to use, using SemVer's version range syntax.
           python-version: 3.11
           
+      - run: pip install requests
       - run: python dash-prs.py
