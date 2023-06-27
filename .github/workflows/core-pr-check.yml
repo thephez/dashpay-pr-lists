@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Core PR check
 
 # Controls when the workflow will run
 on:
@@ -31,3 +31,4 @@ jobs:
           # Version range or exact version of a Python version to use, using SemVer's version range syntax.
           python-version: 3.11
           
+      - run: python dash-prs.py
