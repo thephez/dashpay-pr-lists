@@ -1,4 +1,4 @@
-name: Core PR check
+name: Core and Platform PR checks
 
 # Controls when the workflow will run
 on:
