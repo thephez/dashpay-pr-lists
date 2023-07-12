@@ -2,7 +2,7 @@ import requests
 
 ORG = 'dashevo'
 STATE = 'all'
-PLATFORM_MILESTONE='7' # 7 = v0.25.0; find on https://github.com/dashevo/platform/milestones
+MILESTONE='7' # 7 = v0.25.0; find on https://github.com/dashevo/platform/milestones
 
 def get_pull_requests(org, repo, milestone, state='all'):
     query_url = 'https://api.github.com/repos/{}/{}/issues?&state={}&milestone={}&sort=created&direction=asc'.format(org, repo, state, milestone)
@@ -53,7 +53,7 @@ def get_pull_requests(org, repo, milestone, state='all'):
 
 def main():
     repo = 'platform'
-    get_pull_requests(ORG, repo, PLATFORM_MILESTONE)
+    get_pull_requests(ORG, repo, MILESTONE)
 
 if __name__ == "__main__":
     main()

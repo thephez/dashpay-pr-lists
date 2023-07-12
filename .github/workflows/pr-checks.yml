@@ -29,7 +29,7 @@ jobs:
       - run: pip install requests
 
       - name: Check Core PRs
-        run: python dash-prs.py
+        run: python core-prs.py
 
       - name: Check Platform PRs
         run: python platform-prs.py
