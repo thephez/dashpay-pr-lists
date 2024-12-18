@@ -2,7 +2,7 @@ import requests
 
 ORG = 'dashpay'
 REPO = 'dash'
-MILESTONE = '49' # 49 = v22; find on https://github.com/dashpay/dash/milestones
+MILESTONE = '54' # 54 = v22.1; find on https://github.com/dashpay/dash/milestones
 STATE = 'all'
 
 
