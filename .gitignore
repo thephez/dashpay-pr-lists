@@ -201,3 +201,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# JSON key file for Google service account accessing the Google Sheet
+service-account.json
