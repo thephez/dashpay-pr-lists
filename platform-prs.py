@@ -1,8 +1,8 @@
 import requests
 
-ORG = 'dashevo'
+ORG = 'dashpay'
 STATE = 'all'
-MILESTONE='28' # 28 = v2.0.0; find on https://github.com/dashevo/platform/milestones
+MILESTONE='33' # 33 = v2.2.0; find on https://github.com/dashpay/platform/milestones
 
 def get_pull_requests(org, repo, milestone, state='all'):
     query_url = 'https://api.github.com/repos/{}/{}/issues?&state={}&milestone={}&sort=created&direction=asc'.format(org, repo, state, milestone)
