@@ -14,27 +14,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  core:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          # Version range or exact version of a Python version to use, using SemVer's version range syntax.
           python-version: 3.13
-          
       - run: pip install requests python-dotenv
-
       - name: Check Core PRs
         run: python core-prs.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  platform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - run: pip install requests python-dotenv
       - name: Check Platform PRs
-        if: always()
         run: python platform-prs.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
