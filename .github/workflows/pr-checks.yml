@@ -34,6 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Platform PRs
+        if: always()
         run: python platform-prs.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
