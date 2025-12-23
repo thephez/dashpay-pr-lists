@@ -6,7 +6,7 @@ load_dotenv()
 
 ORG = 'dashpay'
 REPO = 'platform'
-MILESTONE = 'v2.2.0'
+MILESTONE = 'v3.0.0'
 EXCLUDE_UNMERGED = False
 
 GRAPHQL_URL = 'https://api.github.com/graphql'
