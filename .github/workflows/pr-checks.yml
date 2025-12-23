@@ -14,22 +14,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  core:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
-          # Version range or exact version of a Python version to use, using SemVer's version range syntax.
-          python-version: 3.11
-          
-      - run: pip install requests
-
+          python-version: 3.13
+      - run: pip install requests python-dotenv
       - name: Check Core PRs
         run: python core-prs.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  platform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: 3.13
+      - run: pip install requests python-dotenv
       - name: Check Platform PRs
         run: python platform-prs.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

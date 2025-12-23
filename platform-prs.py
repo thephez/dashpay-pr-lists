@@ -1,59 +1,109 @@
+import os
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ORG = 'dashpay'
-STATE = 'all'
-MILESTONE='33' # 33 = v2.2.0; find on https://github.com/dashpay/platform/milestones
+REPO = 'platform'
+MILESTONE = 'v3.0.0'
+EXCLUDE_UNMERGED = False
 
-def get_pull_requests(org, repo, milestone, state='all'):
-    query_url = 'https://api.github.com/repos/{}/{}/issues?&state={}&milestone={}&sort=created&direction=asc'.format(org, repo, state, milestone)
-    #print(query_url)
-    results = requests.get(query_url)
+GRAPHQL_URL = 'https://api.github.com/graphql'
 
-    # Check for invalid response
-    if results.status_code != requests.codes.ok:
-        print('{} Error: {}'.format(results.status_code, results.json()['message']))
-        raise
-    
-    prs = results.json()
-    pr_name = None
+QUERY = '''
+query($owner: String!, $repo: String!, $milestone: String!, $cursor: String) {
+  repository(owner: $owner, name: $repo) {
+    milestones(query: $milestone, first: 1) {
+      nodes {
+        title
+        pullRequests(first: 100, after: $cursor) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            number
+            title
+            state
+            merged
+            labels(first: 10) { nodes { name } }
+          }
+        }
+      }
+    }
+  }
+}
+'''
 
-    #print(results.links)
-    # Get any remaining pages of data
-    while 'next' in results.links.keys():
-        results = requests.get(results.links['next']['url'])
-        prs.extend(results.json())
+def get_pull_requests(org, repo, milestone):
+    token = os.environ.get('GITHUB_TOKEN')
+    if not token:
+        print('Error: GITHUB_TOKEN environment variable required')
+        return
 
-    pull_request_count = sum(1 for p in prs if 'pull_request' in p)
-    print('{}\n{}: {} milestone items retrieved\n\tPull requests: {}\n'.format('-' * 40, repo, len(prs), pull_request_count))
-    
-    for pr in prs:
-        # Get milestone
-        m = 'Unassigned'
-        if pr['milestone'] is not None:
-            m = pr['milestone']['title']
-            if pr_name is None:
-                pr_name = m
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
 
-        # Get labels
-        labels = ""
-        if pr['labels'] is not None:
-            for label in pr['labels']:
-                labels = '{}; {}'.format(label['name'], labels).strip()
+    all_prs = []
+    cursor = None
+    milestone_title = None
 
-        # Check if merged/closed?
-        
-        if 'pull_request' in pr:
-            #print('{}\t{}\t{}\t{}\t{}'.format(pr['title'], pr['number'], pr['state'], labels, m))
-            print('{}/{}\t{}\t{}\t{}\t{}\t{}'.format(org, repo, pr_name, pr['title'], pr['number'], pr['state'], labels))
+    while True:
+        variables = {
+            'owner': org,
+            'repo': repo,
+            'milestone': milestone,
+            'cursor': cursor
+        }
+
+        response = requests.post(GRAPHQL_URL, json={'query': QUERY, 'variables': variables}, headers=headers)
+
+        if response.status_code != 200:
+            print(f'{response.status_code} Error: {response.text}')
+            return
+
+        data = response.json()
+
+        if 'errors' in data:
+            print(f'GraphQL Error: {data["errors"]}')
+            return
+
+        milestones = data['data']['repository']['milestones']['nodes']
+        if not milestones:
+            print(f'Milestone "{milestone}" not found')
+            return
+
+        milestone_data = milestones[0]
+        milestone_title = milestone_data['title']
+        pr_data = milestone_data['pullRequests']
+
+        all_prs.extend(pr_data['nodes'])
+
+        if pr_data['pageInfo']['hasNextPage']:
+            cursor = pr_data['pageInfo']['endCursor']
         else:
-            #print('Issue: {} {} {}'.format(pr['number'], pr['title'], m))
+            break
+
+    print('{}\n{}: {} PRs retrieved\n'.format('-' * 40, repo, len(all_prs)))
+
+    for pr in all_prs:
+        # Skip closed PRs that weren't merged
+        if EXCLUDE_UNMERGED and pr['state'] == 'CLOSED' and not pr['merged']:
             continue
 
-    print('\n{} PRs retrieved for the {} milestone of {}/{} (GitHub milestone #{})\n{}\n'.format(pull_request_count, pr_name, org, repo, milestone, '-' * 40))
+        labels = '; '.join(label['name'] for label in pr['labels']['nodes'])
+        state = 'merged' if pr['merged'] else pr['state'].lower()
+
+        print('{}/{}\t{}\t{}\t{}\t{}\t{}'.format(
+            org, repo, milestone_title, pr['title'], pr['number'], state, labels
+        ))
+
+    print('\n{} PRs retrieved for the {} milestone of {}/{}\n{}\n'.format(
+        len(all_prs), milestone_title, org, repo, '-' * 40
+    ))
 
 def main():
-    repo = 'platform'
-    get_pull_requests(ORG, repo, MILESTONE)
+    get_pull_requests(ORG, REPO, MILESTONE)
 
 if __name__ == "__main__":
     main()
