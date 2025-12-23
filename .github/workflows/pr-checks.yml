@@ -30,6 +30,10 @@ jobs:
 
       - name: Check Core PRs
         run: python core-prs.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Platform PRs
         run: python platform-prs.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
